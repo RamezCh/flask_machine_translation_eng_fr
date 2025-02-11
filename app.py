@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing.sequence import pad_sequences
@@ -24,65 +24,43 @@ max_eng_length = 15
 max_fr_length = 21
 
 def clean_text(text):
-    # Convert text to lowercase
     text = text.lower()
-
-    # Keep lowercase letters
     text = re.sub(r'[^a-z]', ' ', text)
-
-    # Replace multiple spaces with a single space
     text = re.sub(r'\s+', ' ', text)
-
-    # Strip leading and trailing spaces
     text = text.strip()
-
     return text
 
 # Translation function
 def translate_sentence(input_sentence):
-    # Preprocess input sentence
     input_sentence = clean_text(input_sentence)
-
-    # Tokenize input sentence
     input_sequence = eng_tokenizer.texts_to_sequences([input_sentence])
-
-    # Pad input sequence
     input_padded = pad_sequences(input_sequence, maxlen=max_eng_length, padding='post')
-
-    # Initialize target sequence with the start token
     target_seq = np.zeros((1, 1))
     target_seq[0, 0] = fr_tokenizer.word_index['start']
-
-    # Decode the sentence
     decoded_sentence = ''
     for _ in range(max_fr_length - 1):
-        # Predict next token
         output = model.predict([input_padded, target_seq], verbose=0)
-
-        # Get token
         sampled_word_index = np.argmax(output[0, -1, :])
         sampled_word = fr_tokenizer.index_word.get(sampled_word_index, '')
-
         if sampled_word == 'end':
             break
         decoded_sentence += ' ' + sampled_word
-
-        # Update target sequence
         target_seq = np.append(target_seq, [[sampled_word_index]], axis=1)
-
     return decoded_sentence.strip()
 
 # Flask App
 app = Flask(__name__)
 
+@app.route('/')
+def home():
+    return render_template('index.html')
+
 @app.route("/translate", methods=["POST"])
 def translate():
     data = request.json
     input_text = data.get("text", "")
-
     if not input_text:
         return jsonify({"error": "No input text provided"}), 400
-
     translation = translate_sentence(input_text)
     return jsonify({"translation": translation})
 

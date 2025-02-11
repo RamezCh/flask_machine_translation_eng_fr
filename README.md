@@ -39,6 +39,16 @@ Once the container is running, send a POST request to test the translation:
   }
   ```
 
+### 4️⃣ Using Flask
+
+Go to http://127.0.0.1:5000/
+
+Type what you want to translate
+
+Hit Translate
+
+You now have your French translation!
+
 ---
 
 ## 🌐 Gradio Deployment
