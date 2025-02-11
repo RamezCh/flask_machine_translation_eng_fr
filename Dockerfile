@@ -10,6 +10,8 @@ COPY app.py requirements.txt ./
 
 # Copy the 'model' directory into the container
 COPY model ./model
+# add templates so it can find index.html and run it on port 5000
+COPY templates ./templates
 
 # Install required Python packages listed in requirements.txt
 # The --no-cache-dir option prevents caching to reduce the image size
